@@ -1,6 +1,6 @@
 import { DatasetRow } from "@/types";
 
-const BASE_URL = "https://api-open.data.gov.sg/v2/public/api/datasets";
+const BASE_URL = "https://api-production.data.gov.sg/v2/public/api/datasets";
 
 interface ListRowsResponse {
   code: number;
@@ -12,12 +12,15 @@ interface ListRowsResponse {
 }
 
 export async function fetchDatasetRows(
-  datasetId: string
+  datasetId: string,
+  maxPages: number = 5
 ): Promise<DatasetRow[]> {
   const allRows: DatasetRow[] = [];
   let nextUrl: string | null = `${BASE_URL}/${datasetId}/list-rows`;
+  let pageCount = 0;
 
-  while (nextUrl) {
+  while (nextUrl && pageCount < maxPages) {
+    pageCount++;
     const currentUrl = nextUrl;
     nextUrl = null;
 
@@ -40,9 +43,22 @@ export async function fetchDatasetRows(
       throw new Error(json.errorMsg ?? `API error for dataset ${datasetId}`);
     }
 
-    allRows.push(...(json.data?.rows ?? []));
+    // Simple deduplication - keep unique rows by vault_id only
+    const seen = new Set<string>();
+    for (const row of json.data?.rows ?? []) {
+      const id = row.vault_id || row.id || '';
+      if (!seen.has(id)) {
+        seen.add(id);
+        allRows.push(row);
+      }
+    }
 
-    nextUrl = json.data?.links?.next ?? null;
+    const nextCursor = json.data?.links?.next;
+    if (nextCursor) {
+      nextUrl = `${BASE_URL}/${datasetId}/list-rows?${decodeURIComponent(nextCursor)}`;
+    } else {
+      nextUrl = null;
+    }
   }
 
   return allRows;

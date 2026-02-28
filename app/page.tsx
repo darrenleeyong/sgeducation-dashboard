@@ -11,10 +11,10 @@ export default function Home() {
   return (
     <div className="min-h-screen bg-background">
       {/* Header */}
-      <header className="border-b">
+      <header className="border-b border-border bg-background/80 backdrop-blur-md">
         <div className="mx-auto max-w-7xl px-4 py-4 flex items-center justify-between">
           <div>
-            <h1 className="text-xl font-bold tracking-tight">
+            <h1 className="text-xl font-bold tracking-tight text-foreground">
               SG Education Dashboard
             </h1>
             <p className="text-sm text-muted-foreground">
@@ -27,14 +27,14 @@ export default function Home() {
 
       {/* Tabs */}
       <Tabs defaultValue="primary" className="w-full">
-        <div className="border-b">
+        <div className="border-b border-border">
           <div className="mx-auto max-w-7xl px-4">
-            <TabsList className="h-auto bg-transparent p-0 gap-0">
+            <TabsList className="h-auto bg-transparent p-0 gap-0 border-none">
               {TAB_VALUES.map((tab) => (
                 <TabsTrigger
                   key={tab}
                   value={tab}
-                  className="rounded-none border-b-2 border-transparent px-4 py-3 text-sm font-medium data-[state=active]:border-primary data-[state=active]:bg-transparent data-[state=active]:shadow-none"
+                  className="rounded-none border-b-2 border-transparent px-4 py-3 text-sm font-medium text-muted-foreground data-[state=active]:border-primary data-[state=active]:bg-transparent data-[state=active]:shadow-none data-[state=active]:text-foreground"
                 >
                   {TAB_LABELS[tab]}
                 </TabsTrigger>

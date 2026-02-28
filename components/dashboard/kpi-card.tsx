@@ -15,7 +15,7 @@ interface KPICardProps {
 export function KPICard({ title, value, subtitle, icon, loading }: KPICardProps) {
   if (loading) {
     return (
-      <Card>
+      <Card className="bg-card border-border">
         <CardContent className="p-4">
           <Skeleton className="h-4 w-24 mb-2" />
           <Skeleton className="h-8 w-16" />
@@ -26,15 +26,15 @@ export function KPICard({ title, value, subtitle, icon, loading }: KPICardProps)
   }
 
   return (
-    <Card>
+    <Card className="bg-card border-border">
       <CardContent className="p-4">
         <div className="flex items-center justify-between">
           <p className="text-sm text-muted-foreground">{title}</p>
           {icon && <span className="text-muted-foreground">{icon}</span>}
         </div>
-        <p className="text-2xl font-bold mt-1">{value}</p>
+        <p className="text-2xl font-bold mt-1 text-card-foreground">{value}</p>
         {subtitle && (
-          <p className="text-xs text-muted-foreground mt-0.5">{subtitle}</p>
+          <p className="text-xs text-muted-foreground mt-0.5 opacity-80">{subtitle}</p>
         )}
       </CardContent>
     </Card>

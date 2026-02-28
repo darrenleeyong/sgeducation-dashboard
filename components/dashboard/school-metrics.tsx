@@ -16,7 +16,7 @@ import { useFilterStore } from "@/lib/store";
 import { DATASET_IDS, DatasetRow } from "@/types";
 import { ChartCard } from "./chart-card";
 import { KPICard } from "./kpi-card";
-import { Users, School, BookOpen, LayoutGrid } from "lucide-react";
+import { Users, School, BookOpen, LayoutGrid, FileX } from "lucide-react";
 
 const METRIC_DATASETS = {
   pupilsPerTeacher: DATASET_IDS.pupilsPerTeacher,
@@ -30,7 +30,33 @@ function toNum(v: unknown): number {
 }
 
 function getYear(row: DatasetRow): number {
-  return toNum(row.year ?? row.Year ?? row._id);
+  return toNum(row.year ?? row.Year);
+}
+
+function CustomTooltip({ active, payload, label }: any) {
+  if (active && payload && payload.length) {
+    return (
+      <div className="bg-card/95 backdrop-blur-sm border border-border rounded-lg p-3 shadow-lg font-mono text-xs">
+        <p className="font-semibold text-card-foreground mb-1">{label}</p>
+        {payload.map((entry: any, index: number) => (
+          <p key={index} style={{ color: entry.color }}>
+            {entry.name}: {typeof entry.value === 'number' ? entry.value.toFixed(1) : entry.value}
+          </p>
+        ))}
+      </div>
+    );
+  }
+  return null;
+}
+
+function EmptyState() {
+  return (
+    <div className="flex flex-col items-center justify-center h-[240px] text-muted-foreground">
+      <FileX className="h-10 w-10 mb-3 opacity-50" />
+      <p className="text-sm font-medium">No data available</p>
+      <p className="text-xs opacity-70">Try adjusting your filters</p>
+    </div>
+  );
 }
 
 export function SchoolMetrics() {
@@ -50,10 +76,9 @@ export function SchoolMetrics() {
         continue;
 
       const ratio = toNum(
-        row.pupil_teacher_ratio ??
+        row.pri_students_to_teachers ??
+          row.pupil_teacher_ratio ??
           row.ratio ??
-          row.pupils_per_teacher ??
-          row.average_pupil_teacher_ratio ??
           0
       );
       if (ratio > 0) yearMap[year] = ratio;
@@ -73,21 +98,11 @@ export function SchoolMetrics() {
       if (year < activeFilters.yearStart || year > activeFilters.yearEnd)
         continue;
 
-      const level = String(
-        row.level ?? row.Level ?? row.school_level ?? ""
-      ).toLowerCase();
-      if (
-        activeFilters.schoolLevel !== "all" &&
-        level &&
-        !level.includes(activeFilters.schoolLevel.toLowerCase())
-      )
-        continue;
-
       const size = toNum(
-        row.average_class_size ??
+        row.avg_class_size ??
           row.class_size ??
+          row.average_class_size ??
           row.size ??
-          row.avg_size ??
           0
       );
       if (size > 0) {
@@ -112,13 +127,16 @@ export function SchoolMetrics() {
     let totalEnrolment = 0;
     for (const row of enrolmentRows) {
       if (getYear(row) === latestYear) {
-        totalEnrolment += toNum(
-          row.enrolment ??
-            row.no_of_pupils ??
-            row.total ??
-            row.number ??
-            0
-        );
+        const sex = String(row.sex ?? row.Sex ?? "").toLowerCase();
+        if (sex === "mf" || sex === "total" || sex === "") {
+          totalEnrolment += toNum(
+            row.enrolment ??
+              row.ENROLMENT ??
+              row.no_of_pupils ??
+              row.total ??
+              0
+          );
+        }
       }
     }
 
@@ -144,6 +162,9 @@ export function SchoolMetrics() {
 
     return { totalEnrolment, totalSchools, latestRatio, latestClassSize };
   }, [data, activeFilters, pupilTeacherData, classSizeData]);
+
+  const hasRatioData = pupilTeacherData.length > 0;
+  const hasClassSizeData = classSizeData.length > 0;
 
   return (
     <div className="space-y-4">
@@ -184,40 +205,49 @@ export function SchoolMetrics() {
           description="Trend over time"
           loading={loading}
           error={error}
+          empty={!hasRatioData && !loading}
         >
-          <ResponsiveContainer width="100%" height={280}>
-            <LineChart data={pupilTeacherData}>
-              <CartesianGrid strokeDasharray="3 3" className="opacity-30" />
-              <XAxis
-                dataKey="year"
-                tick={{ fontSize: 12 }}
-                tickLine={false}
-                axisLine={false}
-              />
-              <YAxis
-                tick={{ fontSize: 12 }}
-                tickLine={false}
-                axisLine={false}
-              />
-              <Tooltip
-                contentStyle={{
-                  backgroundColor: "hsl(var(--popover))",
-                  border: "1px solid hsl(var(--border))",
-                  borderRadius: "8px",
-                }}
-              />
-              <Legend />
-              <Line
-                type="monotone"
-                dataKey="ratio"
-                name="Pupil-Teacher Ratio"
-                stroke="var(--chart-1)"
-                strokeWidth={2}
-                dot={{ r: 3 }}
-                activeDot={{ r: 5 }}
-              />
-            </LineChart>
-          </ResponsiveContainer>
+          {hasRatioData ? (
+            <ResponsiveContainer width="100%" height={240}>
+              <LineChart data={pupilTeacherData}>
+                <defs>
+                  <linearGradient id="gradientRatio" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="5%" stopColor="#22c55e" stopOpacity={0.8}/>
+                    <stop offset="95%" stopColor="#22c55e" stopOpacity={0.2}/>
+                  </linearGradient>
+                </defs>
+                <CartesianGrid 
+                  strokeDasharray="1 1" 
+                  stroke="hsl(var(--border))" 
+                  className="opacity-40"
+                />
+                <XAxis
+                  dataKey="year"
+                  tick={{ fontSize: 11, fontFamily: 'var(--font-jetbrains-mono), monospace', fill: 'hsl(var(--foreground))' }}
+                  tickLine={{ stroke: 'hsl(var(--border))' }}
+                  axisLine={{ stroke: 'hsl(var(--border))' }}
+                />
+                <YAxis
+                  tick={{ fontSize: 11, fontFamily: 'var(--font-jetbrains-mono), monospace', fill: 'hsl(var(--foreground))' }}
+                  tickLine={{ stroke: 'hsl(var(--border))' }}
+                  axisLine={{ stroke: 'hsl(var(--border))' }}
+                />
+                <Tooltip content={<CustomTooltip />} cursor={{ fill: 'hsl(var(--muted))', opacity: 0.2 }} />
+                <Legend wrapperStyle={{ paddingTop: '10px', fontFamily: 'var(--font-jetbrains-mono), monospace', color: 'hsl(var(--foreground))' }} />
+                <Line
+                  type="monotone"
+                  dataKey="ratio"
+                  name="Pupil-Teacher Ratio"
+                  stroke="#22c55e"
+                  strokeWidth={3}
+                  dot={{ fill: '#22c55e', r: 4, strokeWidth: 2, stroke: 'hsl(var(--background))' }}
+                  activeDot={{ r: 6, fill: '#22c55e' }}
+                />
+              </LineChart>
+            </ResponsiveContainer>
+          ) : (
+            <EmptyState />
+          )}
         </ChartCard>
 
         <ChartCard
@@ -225,40 +255,49 @@ export function SchoolMetrics() {
           description="Trend over time"
           loading={loading}
           error={error}
+          empty={!hasClassSizeData && !loading}
         >
-          <ResponsiveContainer width="100%" height={280}>
-            <LineChart data={classSizeData}>
-              <CartesianGrid strokeDasharray="3 3" className="opacity-30" />
-              <XAxis
-                dataKey="year"
-                tick={{ fontSize: 12 }}
-                tickLine={false}
-                axisLine={false}
-              />
-              <YAxis
-                tick={{ fontSize: 12 }}
-                tickLine={false}
-                axisLine={false}
-              />
-              <Tooltip
-                contentStyle={{
-                  backgroundColor: "hsl(var(--popover))",
-                  border: "1px solid hsl(var(--border))",
-                  borderRadius: "8px",
-                }}
-              />
-              <Legend />
-              <Line
-                type="monotone"
-                dataKey="avgSize"
-                name="Avg Class Size"
-                stroke="var(--chart-2)"
-                strokeWidth={2}
-                dot={{ r: 3 }}
-                activeDot={{ r: 5 }}
-              />
-            </LineChart>
-          </ResponsiveContainer>
+          {hasClassSizeData ? (
+            <ResponsiveContainer width="100%" height={240}>
+              <LineChart data={classSizeData}>
+                <defs>
+                  <linearGradient id="gradientClassSize" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="5%" stopColor="#3b82f6" stopOpacity={0.8}/>
+                    <stop offset="95%" stopColor="#3b82f6" stopOpacity={0.2}/>
+                  </linearGradient>
+                </defs>
+                <CartesianGrid 
+                  strokeDasharray="1 1" 
+                  stroke="hsl(var(--border))" 
+                  className="opacity-40"
+                />
+                <XAxis
+                  dataKey="year"
+                  tick={{ fontSize: 11, fontFamily: 'var(--font-jetbrains-mono), monospace', fill: 'hsl(var(--foreground))' }}
+                  tickLine={{ stroke: 'hsl(var(--border))' }}
+                  axisLine={{ stroke: 'hsl(var(--border))' }}
+                />
+                <YAxis
+                  tick={{ fontSize: 11, fontFamily: 'var(--font-jetbrains-mono), monospace', fill: 'hsl(var(--foreground))' }}
+                  tickLine={{ stroke: 'hsl(var(--border))' }}
+                  axisLine={{ stroke: 'hsl(var(--border))' }}
+                />
+                <Tooltip content={<CustomTooltip />} cursor={{ fill: 'hsl(var(--muted))', opacity: 0.2 }} />
+                <Legend wrapperStyle={{ paddingTop: '10px', fontFamily: 'var(--font-jetbrains-mono), monospace', color: 'hsl(var(--foreground))' }} />
+                <Line
+                  type="monotone"
+                  dataKey="avgSize"
+                  name="Avg Class Size"
+                  stroke="#3b82f6"
+                  strokeWidth={3}
+                  dot={{ fill: '#3b82f6', r: 4, strokeWidth: 2, stroke: 'hsl(var(--background))' }}
+                  activeDot={{ r: 6, fill: '#3b82f6' }}
+                />
+              </LineChart>
+            </ResponsiveContainer>
+          ) : (
+            <EmptyState />
+          )}
         </ChartCard>
       </div>
     </div>
