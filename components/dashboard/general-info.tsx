@@ -22,15 +22,15 @@ import { GraduationCap, MapPin, FileX } from "lucide-react";
 function CustomTooltip({ active, payload, label }: any) {
   if (active && payload && payload.length) {
     return (
-      <div class="bg-card/95 backdrop-blur-sm border border-border rounded-lg p-3 shadow-lg font-mono text-xs">
-        <p class="font-semibold text-card-foreground mb-1">{label}</p>
+      <div className="bg-card/95 backdrop-blur-sm border border-border rounded-lg p-3 shadow-lg font-mono text-xs">
+        <p className="font-semibold text-card-foreground mb-1">{label}</p>
         {payload.map((entry: any, index: number) => (
           <p key={index} style={{ color: entry.color }}>
             {entry.name}: {typeof entry.value === 'number' ? entry.value.toLocaleString() : entry.value}
           </p>
         ))}
         {payload.length > 1 && (
-          <p class="font-semibold text-card-foreground mt-1 pt-1 border-t border-border">
+          <p className="font-semibold text-card-foreground mt-1 pt-1 border-t border-border">
             Total: {payload.reduce((sum: number, entry: any) => sum + (entry.value || 0), 0).toLocaleString()}
           </p>
         )}
@@ -42,10 +42,10 @@ function CustomTooltip({ active, payload, label }: any) {
 
 function EmptyState() {
   return (
-    <div class="flex flex-col items-center justify-center h-[240px] text-muted-foreground">
-      <FileX class="h-10 w-10 mb-3 opacity-50" />
-      <p class="text-sm font-medium">No data available</p>
-      <p class="text-xs opacity-70">Try adjusting your filters</p>
+    <div className="flex flex-col items-center justify-center h-[240px] text-muted-foreground">
+      <FileX className="h-10 w-10 mb-3 opacity-50" />
+      <p className="text-sm font-medium">No data available</p>
+      <p className="text-xs opacity-70">Try adjusting your filters</p>
     </div>
   );
 }
