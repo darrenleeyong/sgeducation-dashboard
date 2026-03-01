@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { ThemeToggle } from "@/components/theme-toggle";
 import { FilterBar } from "@/components/filters/filter-bar";
@@ -159,34 +159,9 @@ function MobileMenu({
 }
 
 function TabContent({ activeTab }: { activeTab: string }) {
-  const sectionIds = ["psle-performance", "school-metrics", "general-info"];
-  const sectionLabels = ["PSLE Performance", "School Metrics", "General Info"];
-
   return (
     <Tabs value={activeTab}>
       <TabsContent value="primary" className="mt-0">
-        {/* Sticky Header with Filters and Section Tabs */}
-        <div className="sticky top-0 z-30 bg-background/80 backdrop-blur-md">
-          <FilterBar />
-          
-          {/* Section Navigation */}
-          <div className="border-b border-border/50">
-            <div className="max-w-5xl mx-auto px-6">
-              <nav className="flex gap-1 py-2 overflow-x-auto scrollbar-hide">
-                {sectionIds.map((id, index) => (
-                  <a
-                    key={id}
-                    href={`#${id}`}
-                    className="uppercase px-3 py-1.5 text-sm font-medium text-muted-foreground hover:text-foreground hover:bg-accent rounded-md whitespace-nowrap transition-colors"
-                  >
-                    {sectionLabels[index]}
-                  </a>
-                ))}
-              </nav>
-            </div>
-          </div>
-        </div>
-
         <div className="max-w-5xl mx-auto p-6">
           <PrimaryDashboard />
         </div>
@@ -206,6 +181,15 @@ function TabContent({ activeTab }: { activeTab: string }) {
 export default function Home() {
   const [activeTab, setActiveTab] = useState("primary");
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [scrolled, setScrolled] = useState(false);
+
+  useEffect(() => {
+    const handleScroll = () => {
+      setScrolled(window.scrollY > 10);
+    };
+    window.addEventListener("scroll", handleScroll, { passive: true });
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, []);
 
   return (
     <div className="min-h-screen bg-background">
@@ -223,11 +207,36 @@ export default function Home() {
       {/* Desktop: Sidebar layout (600px and above) */}
       <div className="hidden sm:flex">
         <Sidebar activeTab={activeTab} onTabChange={setActiveTab} />
-        <main className="flex-1 p-6 overflow-y-auto">
-          <div className="max-w-5xl mx-auto">
-            <TabContent activeTab={activeTab} />
+        <div className="flex-1 flex flex-col min-h-screen">
+          {/* Sticky Header - Full Width */}
+          <div
+            className={`sticky top-0 z-40 transition-all duration-200 ${
+              scrolled ? "z-50 shadow-lg" : ""
+            } bg-background/95 backdrop-blur-md border-b border-border`}
+          >
+            <FilterBar />
+            {/* Section Navigation */}
+            <div className="max-w-7xl mx-auto px-6">
+              <nav className="flex gap-1 py-2 overflow-x-auto scrollbar-hide">
+                {["psle-performance", "school-metrics", "general-info"].map((id, index) => (
+                  <a
+                    key={id}
+                    href={`#${id}`}
+                    className="uppercase px-3 py-1.5 text-sm font-medium text-muted-foreground hover:text-foreground hover:bg-accent rounded-md whitespace-nowrap transition-colors"
+                  >
+                    {["PSLE Performance", "School Metrics", "General Info"][index]}
+                  </a>
+                ))}
+              </nav>
+            </div>
           </div>
-        </main>
+          {/* Scrollable Content */}
+          <main className="flex-1 p-6 overflow-y-auto">
+            <div className="max-w-5xl mx-auto">
+              <TabContent activeTab={activeTab} />
+            </div>
+          </main>
+        </div>
       </div>
 
       {/* Mobile: Simple layout (below 600px) */}

@@ -11,7 +11,7 @@ export const DEFAULT_FILTERS: FilterState = {
   yearEnd: 2024,
   schoolLevel: "all",
   race: "all",
-  subject: "all",
+  subject: "English",
 };
 
 export interface DatasetRow {

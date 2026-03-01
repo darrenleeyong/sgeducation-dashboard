@@ -13,6 +13,7 @@ interface ChartCardProps {
   empty?: boolean;
   children?: ReactNode;
   className?: string;
+  action?: ReactNode;
 }
 
 export function ChartCard({
@@ -23,14 +24,20 @@ export function ChartCard({
   empty,
   children,
   className,
+  action,
 }: ChartCardProps) {
   return (
     <Card className={`bg-card border-border shadow-sm ${className}`}>
       <CardHeader className="pb-2">
-        <CardTitle className="uppercase text-base font-semibold text-card-foreground">{title}</CardTitle>
-        {description && (
-          <p className="text-xs text-muted-foreground">{description}</p>
-        )}
+        <div className="flex items-start justify-between">
+          <div>
+            <CardTitle className="uppercase text-base font-semibold text-card-foreground">{title}</CardTitle>
+            {description && (
+              <p className="text-xs text-muted-foreground">{description}</p>
+            )}
+          </div>
+          {action && <div>{action}</div>}
+        </div>
       </CardHeader>
       <CardContent>
         {loading ? (

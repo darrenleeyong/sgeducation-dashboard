@@ -119,6 +119,9 @@ export function PSLEPerformance() {
     setActiveFilter("subject", value);
   };
 
+  // Default to English if no subject filter is set
+  const currentSubject = activeFilters.subject || "English";
+
   const chartData = useMemo(() => {
     if (!data || Object.keys(data).length === 0) return [];
 
@@ -200,29 +203,29 @@ export function PSLEPerformance() {
 
   return (
     <div>
-      <div className="flex items-center gap-2 mb-4">
-        <Select
-          value={activeFilters.subject}
-          onValueChange={handleSubjectChange}
-        >
-          <SelectTrigger className="w-[160px] bg-muted border-border text-foreground">
-            <SelectValue placeholder="Subject" />
-          </SelectTrigger>
-          <SelectContent className="bg-popover border-border text-popover-foreground">
-            {SUBJECTS.map((subj) => (
-              <SelectItem key={subj} value={subj} className="focus:bg-accent focus:text-accent-foreground">
-                {subj === "all" ? "All Subjects" : subj}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
-      </div>
       <ChartCard
         title="PSLE Performance (% Pass Rate)"
         description="Percentage of students achieving A*-C (1997-2020) / AL 1-6 (2021-2024) by subject"
         loading={loading}
         error={error}
         empty={!hasData && !loading}
+        action={
+          <Select
+            value={currentSubject}
+            onValueChange={handleSubjectChange}
+          >
+            <SelectTrigger className="w-[160px] bg-muted border-border text-foreground">
+              <SelectValue placeholder="Subject" />
+            </SelectTrigger>
+            <SelectContent className="bg-popover border-border text-popover-foreground">
+              {SUBJECTS.map((subj) => (
+                <SelectItem key={subj} value={subj} className="focus:bg-accent focus:text-accent-foreground">
+                  {subj === "all" ? "All Subjects" : subj}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        }
       >
       {!hasData && !loading ? (
         <EmptyState />

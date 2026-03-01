@@ -4,6 +4,8 @@ import { useMemo, useState, useEffect } from "react";
 import {
   LineChart,
   Line,
+  BarChart,
+  Bar,
   XAxis,
   YAxis,
   CartesianGrid,
@@ -16,8 +18,15 @@ import { useFilterStore } from "@/lib/store";
 import { DATASET_IDS, DatasetRow } from "@/types";
 import { ChartCard } from "./chart-card";
 import { KPICard } from "./kpi-card";
-import { Users, School, BookOpen, LayoutGrid, FileX } from "lucide-react";
+import { School, BookOpen, LayoutGrid, FileX } from "lucide-react";
 import { loadClassSizeData, ClassSizeRow } from "@/lib/csv-data";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 
 const METRIC_DATASETS = {
   pupilsPerTeacher: DATASET_IDS.pupilsPerTeacher,
@@ -67,6 +76,9 @@ export function SchoolMetrics() {
     applyTrigger
   );
 
+  // Level filter state for enrollment chart
+  const [selectedLevel, setSelectedLevel] = useState<string>("all");
+
   // Load CSV data for class size
   const [csvData, setCsvData] = useState<ClassSizeRow[]>([]);
   const [csvLoading, setCsvLoading] = useState(true);
@@ -114,6 +126,48 @@ export function SchoolMetrics() {
       }))
       .sort((a, b) => a.year - b.year);
   }, [csvData, csvLoading, activeFilters]);
+
+  // Enrollment by level data for bar chart
+  const enrollmentByLevelData = useMemo(() => {
+    if (csvLoading || csvData.length === 0) return [];
+
+    const year = activeFilters.yearEnd;
+    const levelMap: Record<string, number> = {
+      "Primary 1": 0,
+      "Primary 2": 0,
+      "Primary 3": 0,
+      "Primary 4": 0,
+      "Primary 5": 0,
+      "Primary 6": 0,
+    };
+
+    for (const row of csvData) {
+      if (row.year !== year) continue;
+      if (row.level_of_education !== "Primary") continue;
+
+      const level = row.level;
+      if (level in levelMap) {
+        levelMap[level] = row.no_of_classes;
+      }
+    }
+
+    // If a specific level is selected, return only that level's data
+    if (selectedLevel !== "all") {
+      const levelLabel = `Primary ${selectedLevel.replace("P", "")}`;
+      if (levelMap[levelLabel] !== undefined) {
+        return [{
+          level: selectedLevel,
+          enrollment: levelMap[levelLabel],
+        }];
+      }
+    }
+
+    // Otherwise return all levels
+    return Object.entries(levelMap).map(([level, enrollment]) => ({
+      level: level.replace("Primary ", "P"),
+      enrollment,
+    }));
+  }, [csvData, csvLoading, activeFilters, selectedLevel]);
 
   const pupilTeacherData = useMemo(() => {
     const rows = data?.pupilsPerTeacher ?? [];
@@ -191,14 +245,7 @@ export function SchoolMetrics() {
 
   return (
     <div className="space-y-4">
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-        <KPICard
-          title="Total Enrolment"
-          value={kpis.totalEnrolment.toLocaleString()}
-          subtitle={`Year ${activeFilters.yearEnd}`}
-          icon={<Users className="h-4 w-4" />}
-          loading={loading}
-        />
+      <div className="grid grid-cols-3 gap-3">
         <KPICard
           title="Schools"
           value={kpis.totalSchools.toLocaleString()}
@@ -223,6 +270,64 @@ export function SchoolMetrics() {
       </div>
 
       <div className="grid md:grid-cols-2 gap-4">
+        <ChartCard
+          title="Total Enrolment by Level"
+          description={`Year ${activeFilters.yearEnd}`}
+          loading={csvLoading}
+          empty={enrollmentByLevelData.length === 0 && !csvLoading}
+        >
+          <div className="flex items-center justify-between mb-4">
+            <Select value={selectedLevel} onValueChange={setSelectedLevel}>
+              <SelectTrigger className="w-[140px]">
+                <SelectValue placeholder="Select level" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">All Levels</SelectItem>
+                <SelectItem value="P1">Primary 1</SelectItem>
+                <SelectItem value="P2">Primary 2</SelectItem>
+                <SelectItem value="P3">Primary 3</SelectItem>
+                <SelectItem value="P4">Primary 4</SelectItem>
+                <SelectItem value="P5">Primary 5</SelectItem>
+                <SelectItem value="P6">Primary 6</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+          {enrollmentByLevelData.length > 0 ? (
+            <ResponsiveContainer width="100%" height={240}>
+              <BarChart data={enrollmentByLevelData} layout={selectedLevel === "all" ? "horizontal" : "horizontal"}>
+                <defs>
+                  <linearGradient id="gradientEnrollment" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="5%" stopColor="#0ea5e9" stopOpacity={0.8}/>
+                    <stop offset="95%" stopColor="#0ea5e9" stopOpacity={0.2}/>
+                  </linearGradient>
+                </defs>
+                <CartesianGrid strokeDasharray="3 3" vertical={false} />
+                <XAxis
+                  dataKey="level"
+                  tick={{ fontSize: 11, fontFamily: 'var(--font-jetbrains-mono), monospace' }}
+                  tickLine={false}
+                  axisLine={{ stroke: 'hsl(var(--border))' }}
+                />
+                <YAxis
+                  tick={{ fontSize: 11, fontFamily: 'var(--font-jetbrains-mono), monospace' }}
+                  tickLine={false}
+                  axisLine={{ stroke: 'hsl(var(--border))' }}
+                  tickFormatter={(v: number) => v >= 1000 ? `${(v / 1000).toFixed(0)}k` : String(v)}
+                />
+                <Tooltip content={<CustomTooltip />} cursor={{ fill: 'hsl(var(--muted))', opacity: 0.2 }} />
+                <Bar
+                  dataKey="enrollment"
+                  name="Enrollment"
+                  fill="url(#gradientEnrollment)"
+                  radius={[4, 4, 0, 0]}
+                />
+              </BarChart>
+            </ResponsiveContainer>
+          ) : (
+            <EmptyState />
+          )}
+        </ChartCard>
+
         <ChartCard
           title="Pupils per Teacher Ratio"
           description="Trend over time"
