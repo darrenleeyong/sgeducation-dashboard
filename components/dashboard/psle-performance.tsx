@@ -41,8 +41,8 @@ const SUBJECT_KEYS: Record<string, string> = {
 const SUBJECT_COLUMNS: Record<string, string> = {
   english: "percentage_psle_eng",
   math: "percentage_psle_math",
-  motherTongue: "percentage_psle_mt",
-  science: "percentage_psle_sci",
+  motherTongue: "percentage_psle_mtl",
+  science: "percentage_psle_science",
 };
 
 function extractYear(row: DatasetRow): number {

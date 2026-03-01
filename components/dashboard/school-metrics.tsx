@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo } from "react";
+import { useMemo, useState, useEffect } from "react";
 import {
   LineChart,
   Line,
@@ -17,6 +17,7 @@ import { DATASET_IDS, DatasetRow } from "@/types";
 import { ChartCard } from "./chart-card";
 import { KPICard } from "./kpi-card";
 import { Users, School, BookOpen, LayoutGrid, FileX } from "lucide-react";
+import { loadClassSizeData, ClassSizeRow } from "@/lib/csv-data";
 
 const METRIC_DATASETS = {
   pupilsPerTeacher: DATASET_IDS.pupilsPerTeacher,
@@ -66,6 +67,54 @@ export function SchoolMetrics() {
     applyTrigger
   );
 
+  // Load CSV data for class size
+  const [csvData, setCsvData] = useState<ClassSizeRow[]>([]);
+  const [csvLoading, setCsvLoading] = useState(true);
+
+  useEffect(() => {
+    loadClassSizeData()
+      .then(setCsvData)
+      .catch(console.error)
+      .finally(() => setCsvLoading(false));
+  }, []);
+
+  // Use CSV data for class size charts
+  const classSizeData = useMemo(() => {
+    if (csvLoading || csvData.length === 0) return [];
+    
+    const yearMap: Record<number, { totalSize: number; countSize: number; totalClasses: number; countClasses: number }> = {};
+
+    for (const row of csvData) {
+      const year = row.year;
+      if (year < activeFilters.yearStart || year > activeFilters.yearEnd)
+        continue;
+
+      const size = row.ave_class_size;
+      const classes = row.no_of_classes;
+
+      if (!yearMap[year]) {
+        yearMap[year] = { totalSize: 0, countSize: 0, totalClasses: 0, countClasses: 0 };
+      }
+
+      if (size > 0) {
+        yearMap[year].totalSize += size;
+        yearMap[year].countSize += 1;
+      }
+      if (classes > 0) {
+        yearMap[year].totalClasses += classes;
+        yearMap[year].countClasses += 1;
+      }
+    }
+
+    return Object.entries(yearMap)
+      .map(([year, { totalSize, countSize, totalClasses, countClasses }]) => ({
+        year: Number(year),
+        avgSize: countSize > 0 ? Math.round((totalSize / countSize) * 10) / 10 : 0,
+        totalClasses: totalClasses,
+      }))
+      .sort((a, b) => a.year - b.year);
+  }, [csvData, csvLoading, activeFilters]);
+
   const pupilTeacherData = useMemo(() => {
     const rows = data?.pupilsPerTeacher ?? [];
     const yearMap: Record<number, number> = {};
@@ -86,37 +135,6 @@ export function SchoolMetrics() {
 
     return Object.entries(yearMap)
       .map(([year, ratio]) => ({ year: Number(year), ratio }))
-      .sort((a, b) => a.year - b.year);
-  }, [data, activeFilters]);
-
-  const classSizeData = useMemo(() => {
-    const rows = data?.classSizes ?? [];
-    const yearMap: Record<number, { total: number; count: number }> = {};
-
-    for (const row of rows) {
-      const year = getYear(row);
-      if (year < activeFilters.yearStart || year > activeFilters.yearEnd)
-        continue;
-
-      const size = toNum(
-        row.avg_class_size ??
-          row.class_size ??
-          row.average_class_size ??
-          row.size ??
-          0
-      );
-      if (size > 0) {
-        if (!yearMap[year]) yearMap[year] = { total: 0, count: 0 };
-        yearMap[year].total += size;
-        yearMap[year].count += 1;
-      }
-    }
-
-    return Object.entries(yearMap)
-      .map(([year, { total, count }]) => ({
-        year: Number(year),
-        avgSize: Math.round((total / count) * 10) / 10,
-      }))
       .sort((a, b) => a.year - b.year);
   }, [data, activeFilters]);
 
@@ -145,7 +163,11 @@ export function SchoolMetrics() {
     for (const row of schoolTypeRows) {
       if (getYear(row) === latestYear) {
         totalSchools += toNum(
-          row.no_of_schools ?? row.count ?? row.number ?? 0
+          row.number_of_pri_sch ??
+            row.no_of_schools ??
+            row.count ??
+            row.number ??
+            0
         );
       }
     }
@@ -161,10 +183,10 @@ export function SchoolMetrics() {
         : 0;
 
     return { totalEnrolment, totalSchools, latestRatio, latestClassSize };
-  }, [data, activeFilters, pupilTeacherData, classSizeData]);
+  }, [data, activeFilters, pupilTeacherData, classSizeData, csvLoading]);
 
   const hasRatioData = pupilTeacherData.length > 0;
-  const hasClassSizeData = classSizeData.length > 0;
+  const hasClassSizeData = classSizeData.length > 0 && !csvLoading;
 
   return (
     <div className="space-y-4">
@@ -292,6 +314,57 @@ export function SchoolMetrics() {
                   strokeWidth={3}
                   dot={{ fill: '#3b82f6', r: 4, strokeWidth: 2, stroke: 'hsl(var(--background))' }}
                   activeDot={{ r: 6, fill: '#3b82f6' }}
+                />
+              </LineChart>
+            </ResponsiveContainer>
+          ) : (
+            <EmptyState />
+          )}
+        </ChartCard>
+
+        <ChartCard
+          title="Number of Classes"
+          description="Total number of classes over time"
+          loading={loading}
+          error={error}
+          empty={!hasClassSizeData && !loading}
+        >
+          {hasClassSizeData ? (
+            <ResponsiveContainer width="100%" height={240}>
+              <LineChart data={classSizeData}>
+                <defs>
+                  <linearGradient id="gradientNumClasses" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="5%" stopColor="#8b5cf6" stopOpacity={0.8}/>
+                    <stop offset="95%" stopColor="#8b5cf6" stopOpacity={0.2}/>
+                  </linearGradient>
+                </defs>
+                <CartesianGrid 
+                  strokeDasharray="1 1" 
+                  stroke="hsl(var(--border))" 
+                  className="opacity-40"
+                />
+                <XAxis
+                  dataKey="year"
+                  tick={{ fontSize: 11, fontFamily: 'var(--font-jetbrains-mono), monospace', fill: 'hsl(var(--foreground))' }}
+                  tickLine={{ stroke: 'hsl(var(--border))' }}
+                  axisLine={{ stroke: 'hsl(var(--border))' }}
+                />
+                <YAxis
+                  tick={{ fontSize: 11, fontFamily: 'var(--font-jetbrains-mono), monospace', fill: 'hsl(var(--foreground))' }}
+                  tickLine={{ stroke: 'hsl(var(--border))' }}
+                  axisLine={{ stroke: 'hsl(var(--border))' }}
+                  tickFormatter={(v: number) => v >= 1000 ? `${(v / 1000).toFixed(0)}k` : String(v)}
+                />
+                <Tooltip content={<CustomTooltip />} cursor={{ fill: 'hsl(var(--muted))', opacity: 0.2 }} />
+                <Legend wrapperStyle={{ paddingTop: '10px', fontFamily: 'var(--font-jetbrains-mono), monospace', color: 'hsl(var(--foreground))' }} />
+                <Line
+                  type="monotone"
+                  dataKey="totalClasses"
+                  name="No. of Classes"
+                  stroke="#8b5cf6"
+                  strokeWidth={3}
+                  dot={{ fill: '#8b5cf6', r: 4, strokeWidth: 2, stroke: 'hsl(var(--background))' }}
+                  activeDot={{ r: 6, fill: '#8b5cf6' }}
                 />
               </LineChart>
             </ResponsiveContainer>

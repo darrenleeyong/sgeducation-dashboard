@@ -7,7 +7,7 @@ export interface FilterState {
 }
 
 export const DEFAULT_FILTERS: FilterState = {
-  yearStart: 1980,
+  yearStart: 2020,
   yearEnd: 2024,
   schoolLevel: "all",
   race: "all",
@@ -93,7 +93,7 @@ export const DATASET_IDS = {
 
 export type DatasetId = (typeof DATASET_IDS)[keyof typeof DATASET_IDS];
 
-export const YEAR_OPTIONS = Array.from({ length: 45 }, (_, i) => 1980 + i);
+export const YEAR_OPTIONS = Array.from({ length: 44 }, (_, i) => 1982 + i); // Data available from 1982 to 2025
 
 export const SCHOOL_LEVELS = ["all", "P1", "P2", "P3", "P4", "P5", "P6"] as const;
 

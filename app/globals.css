@@ -135,4 +135,13 @@
   .scrollbar-hide::-webkit-scrollbar {
     display: none;
   }
+
+  /* Recharts tooltip SVG text should be white in dark mode */
+  .dark .recharts-tooltip-wrapper .recharts-default-tooltip tspan,
+  .dark .recharts-tooltip-label,
+  .dark .recharts-tooltip-item-name,
+  .dark .recharts-tooltip-item-value {
+    fill: white !important;
+    color: white !important;
+  }
 }

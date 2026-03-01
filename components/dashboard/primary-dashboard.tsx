@@ -4,6 +4,7 @@ import { PSLEPerformance } from "./psle-performance";
 import { SchoolMetrics } from "./school-metrics";
 import { GeneralInfo } from "./general-info";
 import { Separator } from "@/components/ui/separator";
+import { ChartCard } from "./chart-card";
 
 export function PrimaryDashboard() {
   return (
@@ -24,7 +25,7 @@ export function PrimaryDashboard() {
 
       <Separator />
 
-      <section>
+      <section className="w-full">
         <h2 className="text-lg font-semibold mb-3">
           General Info &amp; Staffing
         </h2>

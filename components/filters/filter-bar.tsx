@@ -9,7 +9,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { useFilterStore } from "@/lib/store";
-import { YEAR_OPTIONS, SCHOOL_LEVELS, RACES, SUBJECTS } from "@/types";
+import { YEAR_OPTIONS, SUBJECTS } from "@/types";
 import { SlidersHorizontal } from "lucide-react";
 
 export function FilterBar() {
@@ -61,40 +61,6 @@ export function FilterBar() {
             </SelectContent>
           </Select>
 
-          {/* School Level */}
-          <Select
-            value={pendingFilters.schoolLevel}
-            onValueChange={(v) => setPendingFilter("schoolLevel", v)}
-          >
-          <SelectTrigger className="w-[120px] shrink-0 bg-muted border-border text-foreground">
-            <SelectValue placeholder="Level" />
-            </SelectTrigger>
-            <SelectContent className="bg-popover border-border text-popover-foreground">
-              {SCHOOL_LEVELS.map((level) => (
-                <SelectItem key={level} value={level} className="focus:bg-accent focus:text-accent-foreground">
-                  {level === "all" ? "All Levels" : level}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-
-          {/* Race */}
-          <Select
-            value={pendingFilters.race}
-            onValueChange={(v) => setPendingFilter("race", v)}
-          >
-          <SelectTrigger className="w-[130px] shrink-0 bg-muted border-border text-foreground">
-            <SelectValue placeholder="Race" />
-            </SelectTrigger>
-            <SelectContent className="bg-popover border-border text-popover-foreground">
-              {RACES.map((race) => (
-                <SelectItem key={race} value={race} className="focus:bg-accent focus:text-accent-foreground">
-                  {race === "all" ? "All Races" : race}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-
           {/* Subject */}
           <Select
             value={pendingFilters.subject}
@@ -117,7 +83,7 @@ export function FilterBar() {
               onClick={applyFilters}
               className="bg-gradient-to-r from-emerald-500 to-emerald-600 text-white font-semibold shadow-lg hover:shadow-xl transition-all hover:scale-105"
             >
-              Apply Filters
+              Apply
             </Button>
           </div>
         </div>

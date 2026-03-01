@@ -13,10 +13,11 @@ interface ListRowsResponse {
 
 export async function fetchDatasetRows(
   datasetId: string,
-  maxPages: number = 5
+  maxPages: number = 10
 ): Promise<DatasetRow[]> {
   const allRows: DatasetRow[] = [];
-  let nextUrl: string | null = `${BASE_URL}/${datasetId}/list-rows`;
+  // Use limit parameter to get all rows in one request (default is 10)
+  let nextUrl: string | null = `${BASE_URL}/${datasetId}/list-rows?limit=100`;
   let pageCount = 0;
 
   while (nextUrl && pageCount < maxPages) {
@@ -53,9 +54,13 @@ export async function fetchDatasetRows(
       }
     }
 
+    // Check if there are more pages - limit parameter ensures we don't get infinite loops
     const nextCursor = json.data?.links?.next;
-    if (nextCursor) {
-      nextUrl = `${BASE_URL}/${datasetId}/list-rows?${decodeURIComponent(nextCursor)}`;
+    if (nextCursor && pageCount < maxPages) {
+      // Preserve the limit parameter in subsequent requests
+      const cursorParams = new URLSearchParams(nextCursor);
+      cursorParams.set('limit', '100');
+      nextUrl = `${BASE_URL}/${datasetId}/list-rows?${cursorParams.toString()}`;
     } else {
       nextUrl = null;
     }
