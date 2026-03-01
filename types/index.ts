@@ -83,6 +83,11 @@ export const DATASET_IDS = {
   psleMath: "d_960c70a482ce481802ab8fb0a0eca8b2",
   psleMotherTongue: "d_0787520bb7a9bed16d5a7b8e964805b1",
   psleScience: "d_078f6d42ad39d1a80c505d0b3fc7c90f",
+  // T-score data (1997-2020)
+  psleEnglishOld: "d_cd2cd1d40af4b1f8a533a575d87a4367",
+  psleMathOld: "d_b860a6f506c921b8fd6cb3667f419db2",
+  psleMotherTongueOld: "d_4e0be8a8b4cb7fc3b43f2c82d9799fc2",
+  psleScienceOld: "d_af6f5cd97fd8f5497258f059cb044185",
   pupilsPerTeacher: "d_bc5a1a10afedf7d25128dae1342c9556",
   schoolTypes: "d_217c93afee788f476404c42fe4de0249",
   enrolment: "d_8f8256f8af68bfbb63ae449c6546c34f",

@@ -2,6 +2,13 @@
 
 import { useMemo } from "react";
 import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import {
   BarChart,
   Bar,
   XAxis,
@@ -13,15 +20,21 @@ import {
 } from "recharts";
 import { useMultipleDatasets } from "@/hooks/use-dataset";
 import { useFilterStore } from "@/lib/store";
-import { DATASET_IDS, DatasetRow } from "@/types";
+import { DATASET_IDS, DatasetRow, SUBJECTS } from "@/types";
 import { ChartCard } from "./chart-card";
 import { FileX } from "lucide-react";
 
 const PSLE_DATASETS = {
+  // New AL scoring data (2021-2024)
   english: DATASET_IDS.psleEnglish,
   math: DATASET_IDS.psleMath,
   motherTongue: DATASET_IDS.psleMotherTongue,
   science: DATASET_IDS.psleScience,
+  // Old T-score data (1997-2020)
+  englishOld: DATASET_IDS.psleEnglishOld,
+  mathOld: DATASET_IDS.psleMathOld,
+  motherTongueOld: DATASET_IDS.psleMotherTongueOld,
+  scienceOld: DATASET_IDS.psleScienceOld,
 };
 
 const SUBJECT_COLORS: Record<string, string> = {
@@ -36,6 +49,10 @@ const SUBJECT_KEYS: Record<string, string> = {
   math: "Mathematics",
   motherTongue: "Mother Tongue",
   science: "Science",
+  englishOld: "English",
+  mathOld: "Mathematics",
+  motherTongueOld: "Mother Tongue",
+  scienceOld: "Science",
 };
 
 const SUBJECT_COLUMNS: Record<string, string> = {
@@ -43,6 +60,10 @@ const SUBJECT_COLUMNS: Record<string, string> = {
   math: "percentage_psle_math",
   motherTongue: "percentage_psle_mtl",
   science: "percentage_psle_science",
+  englishOld: "percentage_psle_eng",
+  mathOld: "percentage_psle_math",
+  motherTongueOld: "percentage_psle_mtl",
+  scienceOld: "percentage_psle_science",
 };
 
 function extractYear(row: DatasetRow): number {
@@ -88,16 +109,24 @@ function EmptyState() {
 }
 
 export function PSLEPerformance() {
-  const { activeFilters, applyTrigger } = useFilterStore();
+  const { activeFilters, applyTrigger, setActiveFilter } = useFilterStore();
   const { data, loading, error } = useMultipleDatasets(
     PSLE_DATASETS,
     applyTrigger
   );
 
+  const handleSubjectChange = (value: string) => {
+    setActiveFilter("subject", value);
+  };
+
   const chartData = useMemo(() => {
     if (!data || Object.keys(data).length === 0) return [];
 
     const yearMap: Record<number, Record<string, number>> = {};
+    
+    // Determine which dataset is old vs new based on year range
+    const oldDatasetKeys = ['englishOld', 'mathOld', 'motherTongueOld', 'scienceOld'];
+    const newDatasetKeys = ['english', 'math', 'motherTongue', 'science'];
 
     for (const [key, rows] of Object.entries(data)) {
       const subjectLabel = SUBJECT_KEYS[key];
@@ -110,6 +139,9 @@ export function PSLEPerformance() {
       )
         continue;
 
+      // Check if this is old or new dataset
+      const isOldData = oldDatasetKeys.includes(key);
+      
       for (const row of rows) {
         const year = extractYear(row);
         if (year < activeFilters.yearStart || year > activeFilters.yearEnd)
@@ -127,13 +159,21 @@ export function PSLEPerformance() {
           const percentage = extractPercentage(row, colName);
           if (percentage > 0) {
             if (!yearMap[year]) yearMap[year] = {};
-            yearMap[year][subjectLabel] = percentage;
+            
+            // For new AL data (2021+), always use it
+            // For old T-score data (1997-2020), only use if no data exists for that year/subject
+            if (!isOldData || !yearMap[year][subjectLabel]) {
+              yearMap[year][subjectLabel] = percentage;
+            }
           }
         } else if (race.includes(activeFilters.race.toLowerCase())) {
           const percentage = extractPercentage(row, colName);
           if (percentage > 0) {
             if (!yearMap[year]) yearMap[year] = {};
-            yearMap[year][subjectLabel] = percentage;
+            
+            if (!isOldData || !yearMap[year][subjectLabel]) {
+              yearMap[year][subjectLabel] = percentage;
+            }
           }
         }
       }
@@ -146,19 +186,44 @@ export function PSLEPerformance() {
 
   const subjectsToShow = useMemo(() => {
     if (activeFilters.subject !== "all") return [activeFilters.subject];
-    return Object.values(SUBJECT_KEYS);
+    // Get unique subjects only (filter out the old dataset keys)
+    const uniqueSubjects = new Set<string>();
+    Object.values(SUBJECT_KEYS).forEach(subject => {
+      if (!uniqueSubjects.has(subject)) {
+        uniqueSubjects.add(subject);
+      }
+    });
+    return Array.from(uniqueSubjects);
   }, [activeFilters.subject]);
 
   const hasData = chartData.length > 0;
 
   return (
-    <ChartCard
-      title="PSLE Performance (% Pass Rate AL 1-6)"
-      description="Percentage of students achieving Achievement Levels 1-6 by subject"
-      loading={loading}
-      error={error}
-      empty={!hasData && !loading}
-    >
+    <div>
+      <div className="flex items-center gap-2 mb-4">
+        <Select
+          value={activeFilters.subject}
+          onValueChange={handleSubjectChange}
+        >
+          <SelectTrigger className="w-[160px] bg-muted border-border text-foreground">
+            <SelectValue placeholder="Subject" />
+          </SelectTrigger>
+          <SelectContent className="bg-popover border-border text-popover-foreground">
+            {SUBJECTS.map((subj) => (
+              <SelectItem key={subj} value={subj} className="focus:bg-accent focus:text-accent-foreground">
+                {subj === "all" ? "All Subjects" : subj}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+      </div>
+      <ChartCard
+        title="PSLE Performance (% Pass Rate)"
+        description="Percentage of students achieving A*-C (1997-2020) / AL 1-6 (2021-2024) by subject"
+        loading={loading}
+        error={error}
+        empty={!hasData && !loading}
+      >
       {!hasData && !loading ? (
         <EmptyState />
       ) : (
@@ -182,25 +247,23 @@ export function PSLEPerformance() {
                 <stop offset="95%" stopColor="#8b5cf6" stopOpacity={0.4}/>
               </linearGradient>
             </defs>
-            <CartesianGrid strokeDasharray="1 1" className="opacity-40" stroke="hsl(var(--border))" />
+            <CartesianGrid strokeDasharray="3 3" vertical={false} />
             <XAxis
               dataKey="year"
-              tick={{ fontSize: 11, fontFamily: 'var(--font-jetbrains-mono), monospace', fill: 'hsl(var(--foreground))' }}
-              tickLine={{ stroke: 'hsl(var(--border))' }}
+              tick={{ fontSize: 11, fontFamily: 'var(--font-jetbrains-mono), monospace' }}
+              tickLine={false}
               axisLine={{ stroke: 'hsl(var(--border))' }}
-              stroke="hsl(var(--foreground))"
             />
             <YAxis
               domain={[0, 100]}
-              tick={{ fontSize: 11, fontFamily: 'var(--font-jetbrains-mono), monospace', fill: 'hsl(var(--foreground))' }}
-              tickLine={{ stroke: 'hsl(var(--border))' }}
+              tick={{ fontSize: 11, fontFamily: 'var(--font-jetbrains-mono), monospace' }}
+              tickLine={false}
               axisLine={{ stroke: 'hsl(var(--border))' }}
-              stroke="hsl(var(--foreground))"
               tickFormatter={(v: number) => `${v}%`}
             />
             <Tooltip content={<CustomTooltip />} cursor={{ fill: 'hsl(var(--muted))', opacity: 0.2 }} />
             <Legend 
-              wrapperStyle={{ paddingTop: '10px', fontFamily: 'var(--font-jetbrains-mono), monospace', color: 'hsl(var(--foreground))' }}
+              wrapperStyle={{ paddingTop: '10px', fontFamily: 'var(--font-jetbrains-mono), monospace' }}
             />
             {subjectsToShow.map((subject) => (
               <Bar
@@ -216,5 +279,6 @@ export function PSLEPerformance() {
         </ResponsiveContainer>
       )}
     </ChartCard>
+    </div>
   );
 }

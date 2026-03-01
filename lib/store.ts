@@ -11,6 +11,10 @@ interface FilterStore {
     key: K,
     value: FilterState[K]
   ) => void;
+  setActiveFilter: <K extends keyof FilterState>(
+    key: K,
+    value: FilterState[K]
+  ) => void;
   applyFilters: () => void;
   resetFilters: () => void;
 }
@@ -23,6 +27,12 @@ export const useFilterStore = create<FilterStore>((set) => ({
   setPendingFilter: (key, value) =>
     set((state) => ({
       pendingFilters: { ...state.pendingFilters, [key]: value },
+    })),
+
+  setActiveFilter: (key, value) =>
+    set((state) => ({
+      activeFilters: { ...state.activeFilters, [key]: value },
+      applyTrigger: state.applyTrigger + 1,
     })),
 
   applyFilters: () =>
