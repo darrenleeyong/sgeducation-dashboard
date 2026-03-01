@@ -29,7 +29,7 @@ export function KPICard({ title, value, subtitle, icon, loading }: KPICardProps)
     <Card className="bg-card border-border">
       <CardContent className="p-4">
         <div className="flex items-center justify-between">
-          <p className="text-sm text-muted-foreground">{title}</p>
+          <p className="uppercase text-sm text-muted-foreground">{title}</p>
           {icon && <span className="text-muted-foreground">{icon}</span>}
         </div>
         <p className="text-2xl font-bold mt-1 text-card-foreground">{value}</p>

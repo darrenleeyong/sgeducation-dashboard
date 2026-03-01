@@ -9,15 +9,15 @@ import { ChartCard } from "./chart-card";
 export function PrimaryDashboard() {
   return (
     <div className="space-y-8">
-      <section>
-        <h2 className="text-lg font-semibold mb-3">PSLE Performance</h2>
+      <section id="psle-performance">
+        <h2 className="uppercase text-lg font-semibold mb-3">PSLE Performance</h2>
         <PSLEPerformance />
       </section>
 
       <Separator />
 
-      <section>
-        <h2 className="text-lg font-semibold mb-3">
+      <section id="school-metrics">
+        <h2 className="uppercase text-lg font-semibold mb-3">
           School Metrics &amp; Demographics
         </h2>
         <SchoolMetrics />
@@ -25,8 +25,8 @@ export function PrimaryDashboard() {
 
       <Separator />
 
-      <section className="w-full">
-        <h2 className="text-lg font-semibold mb-3">
+      <section id="general-info" className="w-full">
+        <h2 className="uppercase text-lg font-semibold mb-3">
           General Info &amp; Staffing
         </h2>
         <GeneralInfo />

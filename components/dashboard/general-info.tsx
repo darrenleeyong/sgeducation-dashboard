@@ -204,16 +204,16 @@ export function GeneralInfo() {
                   <stop offset="95%" stopColor="#5eead4" stopOpacity={0.6}/>
                 </linearGradient>
               </defs>
-              <CartesianGrid strokeDasharray="1 1" className="opacity-40" stroke="hsl(var(--border))" vertical={false} />
+              <CartesianGrid strokeDasharray="3 3" vertical={false} />
               <XAxis
                 dataKey="year"
-                tick={{ fontSize: 11, fontFamily: 'var(--font-jetbrains-mono), monospace', fill: 'hsl(var(--foreground))' }}
-                tickLine={{ stroke: 'hsl(var(--border))' }}
+                tick={{ fontSize: 11, fontFamily: 'var(--font-jetbrains-mono), monospace' }}
+                tickLine={false}
                 axisLine={{ stroke: 'hsl(var(--border))' }}
               />
               <YAxis
-                tick={{ fontSize: 11, fontFamily: 'var(--font-jetbrains-mono), monospace', fill: 'hsl(var(--foreground))' }}
-                tickLine={{ stroke: 'hsl(var(--border))' }}
+                tick={{ fontSize: 11, fontFamily: 'var(--font-jetbrains-mono), monospace' }}
+                tickLine={false}
                 axisLine={{ stroke: 'hsl(var(--border))' }}
                 tickFormatter={(v: number) =>
                   v >= 1000 ? `${(v / 1000).toFixed(1)}k` : String(v)
@@ -280,16 +280,16 @@ export function GeneralInfo() {
                   <stop offset="95%" stopColor="#8b5cf6" stopOpacity={0.7}/>
                 </linearGradient>
               </defs>
-              <CartesianGrid strokeDasharray="1 1" className="opacity-40" stroke="hsl(var(--border))" vertical={false} />
+              <CartesianGrid strokeDasharray="3 3" vertical={false} />
               <XAxis
                 dataKey="age"
-                tick={{ fontSize: 11, fontFamily: 'var(--font-jetbrains-mono), monospace', fill: 'hsl(var(--foreground))' }}
-                tickLine={{ stroke: 'hsl(var(--border))' }}
+                tick={{ fontSize: 11, fontFamily: 'var(--font-jetbrains-mono), monospace' }}
+                tickLine={false}
                 axisLine={{ stroke: 'hsl(var(--border))' }}
               />
               <YAxis
-                tick={{ fontSize: 11, fontFamily: 'var(--font-jetbrains-mono), monospace', fill: 'hsl(var(--foreground))' }}
-                tickLine={{ stroke: 'hsl(var(--border))' }}
+                tick={{ fontSize: 11, fontFamily: 'var(--font-jetbrains-mono), monospace' }}
+                tickLine={false}
                 axisLine={{ stroke: 'hsl(var(--border))' }}
                 tickFormatter={(v: number) =>
                   v >= 1000 ? `${(v / 1000).toFixed(1)}k` : String(v)
@@ -326,16 +326,16 @@ export function GeneralInfo() {
                   <stop offset="95%" stopColor="#f59e0b" stopOpacity={0.7}/>
                 </linearGradient>
               </defs>
-              <CartesianGrid strokeDasharray="1 1" className="opacity-40" stroke="hsl(var(--border))" vertical={false} />
+              <CartesianGrid strokeDasharray="3 3" vertical={false} />
               <XAxis
                 dataKey="service"
-                tick={{ fontSize: 11, fontFamily: 'var(--font-jetbrains-mono), monospace', fill: 'hsl(var(--foreground))' }}
-                tickLine={{ stroke: 'hsl(var(--border))' }}
+                tick={{ fontSize: 11, fontFamily: 'var(--font-jetbrains-mono), monospace' }}
+                tickLine={false}
                 axisLine={{ stroke: 'hsl(var(--border))' }}
               />
               <YAxis
-                tick={{ fontSize: 11, fontFamily: 'var(--font-jetbrains-mono), monospace', fill: 'hsl(var(--foreground))' }}
-                tickLine={{ stroke: 'hsl(var(--border))' }}
+                tick={{ fontSize: 11, fontFamily: 'var(--font-jetbrains-mono), monospace' }}
+                tickLine={false}
                 axisLine={{ stroke: 'hsl(var(--border))' }}
                 tickFormatter={(v: number) =>
                   v >= 1000 ? `${(v / 1000).toFixed(1)}k` : String(v)

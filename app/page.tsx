@@ -7,7 +7,7 @@ import { FilterBar } from "@/components/filters/filter-bar";
 import { PrimaryDashboard } from "@/components/dashboard/primary-dashboard";
 import { ComingSoon } from "@/components/navigation/coming-soon";
 import { TAB_VALUES, TAB_LABELS } from "@/types";
-import { GraduationCap, Building2, School, BookOpen, University, Menu, X } from "lucide-react";
+import { GraduationCap, Building2, School, BookOpen, University, Menu, X, Github } from "lucide-react";
 
 const TAB_ICONS: Record<string, React.ComponentType<{ className?: string }>> = {
   primary: GraduationCap,
@@ -20,26 +20,19 @@ const TAB_ICONS: Record<string, React.ComponentType<{ className?: string }>> = {
 function Sidebar({ activeTab, onTabChange }: { activeTab: string; onTabChange: (tab: string) => void }) {
   return (
     <aside className="group w-16 hover:w-64 flex-shrink-0 border-r border-border bg-background/80 backdrop-blur-md sticky top-0 h-screen overflow-hidden transition-all duration-300">
-      <div className="p-4 min-w-[240px] h-full">
+      <div className="p-4 min-w-[240px] h-full flex flex-col">
         {/* Header in sidebar */}
         <div className="flex items-center gap-3 mb-6">
           <GraduationCap className="h-7 w-7 text-primary flex-shrink-0" />
-          <span className="whitespace-nowrap overflow-hidden opacity-0 group-hover:opacity-100 transition-opacity duration-200 delay-100">
-            <h1 className="text-xl font-bold tracking-tight text-foreground">
-              SG Education Dashboard
+          <span className="overflow-hidden opacity-0 group-hover:opacity-100 transition-opacity duration-200 delay-100">
+            <h1 className="text-xl font-bold tracking-tight text-foreground whitespace-normal leading-tight">
+              SG EduStats
             </h1>
           </span>
         </div>
 
-        {/* Theme toggle */}
-        <div className="mb-4">
-          <div className="overflow-hidden opacity-0 group-hover:opacity-100 transition-opacity duration-200 delay-100">
-            <ThemeToggle />
-          </div>
-        </div>
-
         {/* Navigation tabs - vertical */}
-        <nav className="flex flex-col gap-1">
+        <nav className="flex flex-col gap-1 flex-1">
           {TAB_VALUES.map((tab) => {
             const Icon = TAB_ICONS[tab];
             return (
@@ -53,13 +46,36 @@ function Sidebar({ activeTab, onTabChange }: { activeTab: string; onTabChange: (
                 }`}
               >
                 <Icon className="h-5 w-5 flex-shrink-0 min-w-[20px]" />
-                <span className="whitespace-nowrap overflow-hidden opacity-0 group-hover:opacity-100 transition-opacity duration-200 delay-100">
+                <span className="uppercase whitespace-nowrap overflow-hidden opacity-0 group-hover:opacity-100 transition-opacity duration-200 delay-100">
                   {TAB_LABELS[tab]}
                 </span>
               </button>
             );
           })}
         </nav>
+
+        {/* Footer */}
+        <div className="mt-4 pt-4 border-t border-border">
+          {/* Theme toggle - always visible */}
+          <div className="mb-3">
+            <ThemeToggle />
+          </div>
+          {/* Credits - visible on hover */}
+          <div className="overflow-hidden">
+            <div className="opacity-0 group-hover:opacity-100 transition-opacity duration-200 delay-100">
+              <div className="text-xs text-muted-foreground space-y-1">
+                <p>Data from <a href="https://data.gov.sg" target="_blank" rel="noopener noreferrer" className="text-primary hover:underline">data.gov.sg</a></p>
+                <p>Built by <a href="https://darrenlee.framer.website/" target="_blank" rel="noopener noreferrer" className="text-primary hover:underline">Darren Lee</a></p>
+                <p>
+                  <a href="https://github.com" target="_blank" rel="noopener noreferrer" className="text-primary hover:underline inline-flex items-center gap-1">
+                    <Github className="h-3 w-3" />
+                    View on GitHub
+                  </a>
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
       </div>
     </aside>
   );
@@ -104,7 +120,7 @@ function MobileMenu({
           <div className="flex items-center gap-3">
             <GraduationCap className="h-7 w-7 text-primary flex-shrink-0" />
             <h1 className="text-xl font-bold tracking-tight text-foreground">
-              SG Education Dashboard
+              SG EduStats
             </h1>
           </div>
           <button
@@ -125,7 +141,7 @@ function MobileMenu({
                   onTabChange(tab);
                   onClose();
                 }}
-                className={`flex items-center gap-3 rounded-md px-4 py-3 text-sm font-medium justify-start ${
+                className={`uppercase flex items-center gap-3 rounded-md px-4 py-3 text-sm font-medium justify-start ${
                   activeTab === tab
                     ? "bg-primary text-primary-foreground"
                     : "text-muted-foreground hover:bg-accent hover:text-foreground"
@@ -143,16 +159,44 @@ function MobileMenu({
 }
 
 function TabContent({ activeTab }: { activeTab: string }) {
+  const sectionIds = ["psle-performance", "school-metrics", "general-info"];
+  const sectionLabels = ["PSLE Performance", "School Metrics", "General Info"];
+
   return (
     <Tabs value={activeTab}>
       <TabsContent value="primary" className="mt-0">
-        <FilterBar />
-        <PrimaryDashboard />
+        {/* Sticky Header with Filters and Section Tabs */}
+        <div className="sticky top-0 z-30 bg-background/80 backdrop-blur-md">
+          <FilterBar />
+          
+          {/* Section Navigation */}
+          <div className="border-b border-border/50">
+            <div className="max-w-5xl mx-auto px-6">
+              <nav className="flex gap-1 py-2 overflow-x-auto scrollbar-hide">
+                {sectionIds.map((id, index) => (
+                  <a
+                    key={id}
+                    href={`#${id}`}
+                    className="uppercase px-3 py-1.5 text-sm font-medium text-muted-foreground hover:text-foreground hover:bg-accent rounded-md whitespace-nowrap transition-colors"
+                  >
+                    {sectionLabels[index]}
+                  </a>
+                ))}
+              </nav>
+            </div>
+          </div>
+        </div>
+
+        <div className="max-w-5xl mx-auto p-6">
+          <PrimaryDashboard />
+        </div>
       </TabsContent>
 
       {TAB_VALUES.filter((t) => t !== "primary").map((tab) => (
         <TabsContent key={tab} value={tab} className="mt-0">
-          <ComingSoon label={`${TAB_LABELS[tab]} Dashboard`} />
+          <main className="max-w-5xl mx-auto p-6">
+            <ComingSoon label={`${TAB_LABELS[tab]} Dashboard`} />
+          </main>
         </TabsContent>
       ))}
     </Tabs>

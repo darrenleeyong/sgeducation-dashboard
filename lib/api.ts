@@ -13,11 +13,11 @@ interface ListRowsResponse {
 
 export async function fetchDatasetRows(
   datasetId: string,
-  maxPages: number = 10
+  maxPages: number = 20
 ): Promise<DatasetRow[]> {
   const allRows: DatasetRow[] = [];
-  // Use limit parameter to get all rows in one request (default is 10)
-  let nextUrl: string | null = `${BASE_URL}/${datasetId}/list-rows?limit=100`;
+  // Use limit=1000 to get all rows in one request for most datasets
+  let nextUrl: string | null = `${BASE_URL}/${datasetId}/list-rows?limit=1000`;
   let pageCount = 0;
 
   while (nextUrl && pageCount < maxPages) {

@@ -1,27 +1,17 @@
 import type { Metadata } from "next";
-import { Geist, Geist_Mono, JetBrains_Mono } from "next/font/google";
+import { Fira_Code } from "next/font/google";
 import { ThemeProvider } from "@/components/theme-provider";
 import "./globals.css";
 
-const geistSans = Geist({
-  variable: "--font-geist-sans",
-  subsets: ["latin"],
-});
-
-const geistMono = Geist_Mono({
-  variable: "--font-geist-mono",
-  subsets: ["latin"],
-});
-
-const jetbrainsMono = JetBrains_Mono({
-  variable: "--font-jetbrains-mono",
+const firaCode = Fira_Code({
+  variable: "--font-fira-code",
   subsets: ["latin"],
 });
 
 export const metadata: Metadata = {
-  title: "SG Education Dashboard",
+  title: "SG EduStats",
   description:
-    "Singapore Primary School Education Data Dashboard — PSLE Performance, Enrolment, and School Metrics",
+    "Singapore Education Data Dashboard — PSLE Performance, Enrolment, and School Metrics",
 };
 
 export default function RootLayout({
@@ -32,7 +22,7 @@ export default function RootLayout({
   return (
     <html lang="en" suppressHydrationWarning>
         <body
-        className={`${geistSans.variable} ${geistMono.variable} ${jetbrainsMono.variable} antialiased`}
+        className={`${firaCode.variable} font-mono antialiased`}
       >
         <ThemeProvider>{children}</ThemeProvider>
       </body>

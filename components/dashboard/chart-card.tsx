@@ -27,7 +27,7 @@ export function ChartCard({
   return (
     <Card className={`bg-card border-border shadow-sm ${className}`}>
       <CardHeader className="pb-2">
-        <CardTitle className="text-base font-semibold text-card-foreground">{title}</CardTitle>
+        <CardTitle className="uppercase text-base font-semibold text-card-foreground">{title}</CardTitle>
         {description && (
           <p className="text-xs text-muted-foreground">{description}</p>
         )}

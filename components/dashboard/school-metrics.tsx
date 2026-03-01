@@ -144,9 +144,10 @@ export function SchoolMetrics() {
     const enrolmentRows = data?.enrolment ?? [];
     let totalEnrolment = 0;
     for (const row of enrolmentRows) {
-      if (getYear(row) === latestYear) {
-        const sex = String(row.sex ?? row.Sex ?? "").toLowerCase();
-        if (sex === "mf" || sex === "total" || sex === "") {
+      const rowYear = getYear(row);
+      if (rowYear === latestYear) {
+        const sex = String(row.sex ?? row.Sex ?? "").toUpperCase();
+        if (sex === "MF" || sex === "TOTAL" || sex === "") {
           totalEnrolment += toNum(
             row.enrolment ??
               row.ENROLMENT ??
@@ -238,24 +239,20 @@ export function SchoolMetrics() {
                     <stop offset="95%" stopColor="#22c55e" stopOpacity={0.2}/>
                   </linearGradient>
                 </defs>
-                <CartesianGrid 
-                  strokeDasharray="1 1" 
-                  stroke="hsl(var(--border))" 
-                  className="opacity-40"
-                />
+                <CartesianGrid strokeDasharray="3 3" vertical={false} />
                 <XAxis
                   dataKey="year"
-                  tick={{ fontSize: 11, fontFamily: 'var(--font-jetbrains-mono), monospace', fill: 'hsl(var(--foreground))' }}
-                  tickLine={{ stroke: 'hsl(var(--border))' }}
+                  tick={{ fontSize: 11, fontFamily: 'var(--font-jetbrains-mono), monospace' }}
+                  tickLine={false}
                   axisLine={{ stroke: 'hsl(var(--border))' }}
                 />
                 <YAxis
-                  tick={{ fontSize: 11, fontFamily: 'var(--font-jetbrains-mono), monospace', fill: 'hsl(var(--foreground))' }}
-                  tickLine={{ stroke: 'hsl(var(--border))' }}
+                  tick={{ fontSize: 11, fontFamily: 'var(--font-jetbrains-mono), monospace' }}
+                  tickLine={false}
                   axisLine={{ stroke: 'hsl(var(--border))' }}
                 />
                 <Tooltip content={<CustomTooltip />} cursor={{ fill: 'hsl(var(--muted))', opacity: 0.2 }} />
-                <Legend wrapperStyle={{ paddingTop: '10px', fontFamily: 'var(--font-jetbrains-mono), monospace', color: 'hsl(var(--foreground))' }} />
+                <Legend wrapperStyle={{ paddingTop: '10px', fontFamily: 'var(--font-jetbrains-mono), monospace' }} />
                 <Line
                   type="monotone"
                   dataKey="ratio"
@@ -288,24 +285,20 @@ export function SchoolMetrics() {
                     <stop offset="95%" stopColor="#3b82f6" stopOpacity={0.2}/>
                   </linearGradient>
                 </defs>
-                <CartesianGrid 
-                  strokeDasharray="1 1" 
-                  stroke="hsl(var(--border))" 
-                  className="opacity-40"
-                />
+                <CartesianGrid strokeDasharray="3 3" vertical={false} />
                 <XAxis
                   dataKey="year"
-                  tick={{ fontSize: 11, fontFamily: 'var(--font-jetbrains-mono), monospace', fill: 'hsl(var(--foreground))' }}
-                  tickLine={{ stroke: 'hsl(var(--border))' }}
+                  tick={{ fontSize: 11, fontFamily: 'var(--font-jetbrains-mono), monospace' }}
+                  tickLine={false}
                   axisLine={{ stroke: 'hsl(var(--border))' }}
                 />
                 <YAxis
-                  tick={{ fontSize: 11, fontFamily: 'var(--font-jetbrains-mono), monospace', fill: 'hsl(var(--foreground))' }}
-                  tickLine={{ stroke: 'hsl(var(--border))' }}
+                  tick={{ fontSize: 11, fontFamily: 'var(--font-jetbrains-mono), monospace' }}
+                  tickLine={false}
                   axisLine={{ stroke: 'hsl(var(--border))' }}
                 />
                 <Tooltip content={<CustomTooltip />} cursor={{ fill: 'hsl(var(--muted))', opacity: 0.2 }} />
-                <Legend wrapperStyle={{ paddingTop: '10px', fontFamily: 'var(--font-jetbrains-mono), monospace', color: 'hsl(var(--foreground))' }} />
+                <Legend wrapperStyle={{ paddingTop: '10px', fontFamily: 'var(--font-jetbrains-mono), monospace' }} />
                 <Line
                   type="monotone"
                   dataKey="avgSize"
@@ -338,25 +331,21 @@ export function SchoolMetrics() {
                     <stop offset="95%" stopColor="#8b5cf6" stopOpacity={0.2}/>
                   </linearGradient>
                 </defs>
-                <CartesianGrid 
-                  strokeDasharray="1 1" 
-                  stroke="hsl(var(--border))" 
-                  className="opacity-40"
-                />
+                <CartesianGrid strokeDasharray="3 3" vertical={false} />
                 <XAxis
                   dataKey="year"
-                  tick={{ fontSize: 11, fontFamily: 'var(--font-jetbrains-mono), monospace', fill: 'hsl(var(--foreground))' }}
-                  tickLine={{ stroke: 'hsl(var(--border))' }}
+                  tick={{ fontSize: 11, fontFamily: 'var(--font-jetbrains-mono), monospace' }}
+                  tickLine={false}
                   axisLine={{ stroke: 'hsl(var(--border))' }}
                 />
                 <YAxis
-                  tick={{ fontSize: 11, fontFamily: 'var(--font-jetbrains-mono), monospace', fill: 'hsl(var(--foreground))' }}
-                  tickLine={{ stroke: 'hsl(var(--border))' }}
+                  tick={{ fontSize: 11, fontFamily: 'var(--font-jetbrains-mono), monospace' }}
+                  tickLine={false}
                   axisLine={{ stroke: 'hsl(var(--border))' }}
                   tickFormatter={(v: number) => v >= 1000 ? `${(v / 1000).toFixed(0)}k` : String(v)}
                 />
                 <Tooltip content={<CustomTooltip />} cursor={{ fill: 'hsl(var(--muted))', opacity: 0.2 }} />
-                <Legend wrapperStyle={{ paddingTop: '10px', fontFamily: 'var(--font-jetbrains-mono), monospace', color: 'hsl(var(--foreground))' }} />
+                <Legend wrapperStyle={{ paddingTop: '10px', fontFamily: 'var(--font-jetbrains-mono), monospace' }} />
                 <Line
                   type="monotone"
                   dataKey="totalClasses"
