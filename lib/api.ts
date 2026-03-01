@@ -47,7 +47,7 @@ export async function fetchDatasetRows(
     // Simple deduplication - keep unique rows by vault_id only
     const seen = new Set<string>();
     for (const row of json.data?.rows ?? []) {
-      const id = row.vault_id || row.id || '';
+      const id = String(row.vault_id || row.id || '');
       if (!seen.has(id)) {
         seen.add(id);
         allRows.push(row);
