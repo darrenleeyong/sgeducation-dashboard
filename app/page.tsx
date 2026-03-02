@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { ThemeToggle } from "@/components/theme-toggle";
 import { FilterBar } from "@/components/filters/filter-bar";
@@ -85,13 +85,21 @@ function MobileHeader({ onMenuClick }: { onMenuClick: () => void }) {
   return (
     <header className="border-b border-border bg-background/80 backdrop-blur-md">
       <div className="mx-auto max-w-7xl px-4 py-3 flex items-center justify-between">
-        <button
-          onClick={onMenuClick}
-          className="p-2 rounded-md hover:bg-accent"
-          aria-label="Toggle menu"
-        >
-          <Menu className="h-5 w-5" />
-        </button>
+        <div className="flex items-center gap-3">
+          <button
+            onClick={onMenuClick}
+            className="p-2 rounded-md hover:bg-accent"
+            aria-label="Toggle menu"
+          >
+            <Menu className="h-5 w-5" />
+          </button>
+          <div className="flex items-center gap-2">
+            <GraduationCap className="h-6 w-6 text-primary" />
+            <span className="text-lg font-bold tracking-tight text-foreground">
+              SG EduStats
+            </span>
+          </div>
+        </div>
         <div className="flex items-center gap-2">
           <ThemeToggle />
         </div>
@@ -116,13 +124,7 @@ function MobileMenu({
   return (
     <div className="fixed inset-0 z-50 bg-background/95 backdrop-blur-sm pt-14">
       <div className="mx-auto max-w-7xl px-4 py-4">
-        <div className="flex items-center justify-between mb-6">
-          <div className="flex items-center gap-3">
-            <GraduationCap className="h-7 w-7 text-primary flex-shrink-0" />
-            <h1 className="text-xl font-bold tracking-tight text-foreground">
-              SG EduStats
-            </h1>
-          </div>
+        <div className="flex items-center justify-end mb-6">
           <button
             onClick={onClose}
             className="p-2 rounded-md hover:bg-accent"
@@ -182,10 +184,22 @@ export default function Home() {
   const [activeTab, setActiveTab] = useState("primary");
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
+  const [mobileHeaderVisible, setMobileHeaderVisible] = useState(true);
+  const lastScrollY = useRef(0);
 
   useEffect(() => {
     const handleScroll = () => {
-      setScrolled(window.scrollY > 10);
+      const currentScrollY = window.scrollY;
+      setScrolled(currentScrollY > 10);
+      
+      // Hide header when scrolling down, show when scrolling up
+      if (currentScrollY > lastScrollY.current && currentScrollY > 60) {
+        setMobileHeaderVisible(false);
+      } else {
+        setMobileHeaderVisible(true);
+      }
+      
+      lastScrollY.current = currentScrollY;
     };
     window.addEventListener("scroll", handleScroll, { passive: true });
     return () => window.removeEventListener("scroll", handleScroll);
@@ -195,13 +209,43 @@ export default function Home() {
     <div className="min-h-screen bg-background">
       {/* Mobile: Header with hamburger (below 600px) */}
       <div className="sm:hidden">
-        <MobileHeader onMenuClick={() => setMobileMenuOpen(true)} />
+        {/* MobileHeader - pushes content down when visible */}
+        <div
+          className={`transition-all duration-300 ${
+            mobileHeaderVisible ? "h-[57px] opacity-100" : "h-0 opacity-0"
+          } overflow-hidden`}
+        >
+          <div className="bg-background/80 backdrop-blur-md border-b border-border">
+            <MobileHeader onMenuClick={() => setMobileMenuOpen(true)} />
+          </div>
+        </div>
         <MobileMenu
           isOpen={mobileMenuOpen}
           onClose={() => setMobileMenuOpen(false)}
           activeTab={activeTab}
           onTabChange={setActiveTab}
         />
+        
+        {/* Sticky Filter Bar and Section Tabs - always at top */}
+        <div className="sticky top-0 z-30 bg-background/95 backdrop-blur-md border-b border-border">
+          <FilterBar />
+          <div className="max-w-7xl mx-auto px-4">
+            <nav className="flex gap-1 py-2 overflow-x-auto scrollbar-hide">
+              {["psle-performance", "school-metrics", "general-info"].map((id, index) => (
+                <a
+                  key={id}
+                  href={`#${id}`}
+                  className="uppercase px-3 py-1.5 text-sm font-medium text-muted-foreground hover:text-foreground hover:bg-accent rounded-md whitespace-nowrap transition-colors"
+                >
+                  {["PSLE Performance", "School Metrics", "General Info"][index]}
+                </a>
+              ))}
+            </nav>
+          </div>
+        </div>
+        
+        {/* Scrollable Content */}
+        <TabContent activeTab={activeTab} />
       </div>
 
       {/* Desktop: Sidebar layout (600px and above) */}
@@ -237,11 +281,6 @@ export default function Home() {
             </div>
           </main>
         </div>
-      </div>
-
-      {/* Mobile: Simple layout (below 600px) */}
-      <div className="sm:hidden">
-        <TabContent activeTab={activeTab} />
       </div>
     </div>
   );
